@@ -13,9 +13,6 @@ DEV_USER = "@AL22009"
 
 bot = telebot.TeleBot(TOKEN)
 
-# ملاحظة: إذا كنت ترفع الكود على Render، امسح سطر البروكسي أدناه.
-# apihelper.proxy = {'https': 'http://proxy.server:3128'}
-
 # --- تصميم القوائم ---
 def main_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -37,14 +34,19 @@ def kali_markup_menu():
     markup.add('🔙 القائمة الرئيسية')
     return markup
 
-# --- الرسالة الترحيبية ---
+# --- الرسالة الترحيبية (النسخة المطلوبة) ---
 @bot.message_handler(commands=['start'])
 def welcome(message):
     welcome_text = (
-        f"🛡️ مرحباً بك في نظام الأمن السيبراني المتطور\n\n"
-        f"عزيزي الامبراطور، هذا البوت صُمم ليكون مرجعك الشامل.\n\n"
-        f"👑 المطور المسؤول: {DEV_NAME}\n"
-        f"استخدم الأزرار بالأسفل للبدء! 👇"
+        "🛡️ مرحباً بك في نظام الأمن السيبراني المتطور\n\n"
+        "عزيزي الامبراطور، هذا البوت صُمم ليكون مرجعك الشامل لتعلم أدوات الاختراق الأخلاقي وفحص الشبكات.\n\n"
+        "✨ ماذا يقدم لك البوت؟\n"
+        "• أوامر Termux من الصفر للاحتراف.\n"
+        "• كيفية تثبيت وتشغيل Kali Linux على هاتفك.\n"
+        "• شرح معمق لأدوات الفحص والاستغلال.\n\n"
+        f"👑 المطور المسؤول: {DEV_NAME} ({DEV_TITLE})\n"
+        f"🔗 للتواصل: {DEV_USER}\n\n"
+        "استخدم الأزرار بالأسفل للبدء في رحلتك التعليمية! 👇"
     )
     bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
 
