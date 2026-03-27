@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, request
 from threading import Thread
 
 # إنشاء سرفر وهمي لإقناع Render أن البوت يعمل كخدمة ويب
@@ -26,7 +26,7 @@ import requests
 import time
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN ='8586434472:AAH8GcS0eVa7W77q3r6GXI20OcZw41JFjuM'
+TOKEN ='8586434472:AAHonweZ2eLgVMMjRluntgutYtJ0QeHjz-8'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
@@ -227,7 +227,25 @@ def handle_commands(message):
 # --- تشغيل النظام ---
 print(f"🛡️ [System Online] - Master: {DEV_NAME}")
 keep_alive() # تشغيل السيرفر الوهمي
-bot.polling(non_stop=True)
+from flask import request
+
+WEBHOOK_URL = "https://اسم-خدمتك.onrender.com/"  # ✳️ غيره بالرابط حقك
+
+@app.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    json_str = request.get_data().decode("UTF-8")
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return "OK", 200
+
+@app.route("/")
+def index():
+    return "Bot is running"
+
+if __name__ == "__main__":
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL + TOKEN)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
 
 
  
