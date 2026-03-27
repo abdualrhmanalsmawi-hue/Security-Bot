@@ -226,8 +226,8 @@ def handle_commands(message):
 
 # --- تشغيل النظام ---
 print(f"🛡️ [System Online] - Master: {DEV_NAME}")
-keep_alive() # تشغيل السيرفر الوهمي
-from flask import request
+from
+flask import request
 
 WEBHOOK_URL = "https://اسم-خدمتك.onrender.com/"  # ✳️ غيره بالرابط حقك
 
