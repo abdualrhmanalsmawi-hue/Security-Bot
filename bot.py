@@ -217,7 +217,7 @@ def handle_commands(message):
             f"👤 **الاسم:** {DEV_NAME}\n"
             f"🛠️ **الرتبة:** {DEV_TITLE}\n"
             f"🆔 **اليوزر:** {DEV_USER}\n\n"
-            "هذا النظام هو نتاج عمل مستمر لتقديم أفضل الأدوات والخبرات في عالم الأمن المعلوماتي."
+            "هذا النظام هو نتاج عمل مستمر لتقديم أفضل الأدوات والخبرات في عالم الأمن السيبراني."
         )
         bot.send_message(cid, dev_info, parse_mode='Markdown')
 
@@ -230,3 +230,4 @@ keep_alive() # تشغيل السيرفر الوهمي
 bot.polling(non_stop=True)
 
 
+ 
