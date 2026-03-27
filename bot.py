@@ -229,7 +229,13 @@ print(f"🛡️ [System Online] - Master: {DEV_NAME}")
 from
 flask import request
 
-WEBHOOK_URL = "https://اسم-خدمتك.onrender.com/"  # ✳️ غيره بالرابط حقك
+# --- إعداد الرابط الخاص بمشروعك على Render ---
+# تأكد من وضع الرابط الذي ظهر في صورتك بالضبط
+WEBHOOK_HOST = "https://security-bot-6.onrender.com" 
+
+# ثم تأكد أن السطر الذي يليه يجمع الرابط مع التوكن هكذا:
+WEBHOOK_URL = f"{WEBHOOK_HOST}/{TOKEN}"
+
 
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
@@ -244,7 +250,8 @@ def index():
 
 if __name__ == "__main__":
     bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL + TOKEN)
+    bot.set_webhook(url=WEBHOOK_URL)
+
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
 
 
