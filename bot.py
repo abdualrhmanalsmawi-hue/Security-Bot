@@ -1,3 +1,23 @@
+import os
+from flask import Flask
+from threading import Thread
+
+# إنشاء سرفر وهمي لإقناع Render أن البوت يعمل كخدمة ويب
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "البوت يعمل بنجاح!"
+
+def run():
+    # Render يعطي منفذ عشوائي عبر متغير البيئة PORT
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
 import telebot
 from telebot import apihelper, types
 import random
@@ -6,7 +26,7 @@ import requests
 import time
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN = '8586434472:AAH8GcS0eVa7W77q3r6GXI20OcZw41JFjuM'
+TOKEN ='8586434472:AAH8GcS0eVa7W77q3r6GXI20OcZw41JFjuM'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
@@ -206,5 +226,7 @@ def handle_commands(message):
 
 # --- تشغيل النظام ---
 print(f"🛡️ [System Online] - Master: {DEV_NAME}")
+keep_alive() # تشغيل السيرفر الوهمي
 bot.polling(non_stop=True)
+
 
