@@ -1,29 +1,19 @@
 import os
-from flask import Flask, request
-from threading import Thread
-
-# إنشاء سرفر وهمي لإقناع Render أن البوت يعمل كخدمة ويب
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "البوت يعمل بنجاح!"
-
-def run():
-    # Render يعطي منفذ عشوائي عبر متغير البيئة PORT
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
-
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
-
 import telebot
-from telebot import apihelper, types
+from telebot import types
 import random
 import string
 import requests
 import time
+from flask import Flask, request
+from threading import Thread
+
+# --- إعدادات السيرفر ---
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "البوت يعمل بنجاح!"
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
 TOKEN ='8586434472:AAHonweZ2eLgVMMjRluntgutYtJ0QeHjz-8'
@@ -83,11 +73,9 @@ def handle_commands(message):
     cid = message.chat.id
     text = message.text
 
-    # --- إدارة القوائم ---
     if text == '🐧 أدوات Termux الموسوعية':
         bot.send_message(cid, "🛠️ **أدوات Termux المتاحة (الدليل الموسوعي):**", reply_markup=termux_tools_menu())
 
-    # --- 📡 NMAP: الشرح العملاق (أكثر من 100 سطر شرح) ---
     elif text == '📡 Nmap: الدليل العملاق':
         nmap_edu = (
             "📡 **أداة Nmap (الماسح الشبكي الأسطوري)**\n\n"
@@ -115,7 +103,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, nmap_edu, parse_mode='Markdown')
 
-    # --- 💀 METASPLOIT: دليل الاحتراف الشامل ---
     elif text == '💀 Metasploit: الاحترافي':
         msf_edu = (
             "💀 **إطار عمل Metasploit (الوحش الرقمي)**\n\n"
@@ -137,7 +124,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, msf_edu, parse_mode='Markdown')
 
-    # --- 🗡️ SQLMAP: دليل استخراج البيانات ---
     elif text == '🗡️ Sqlmap: سحب قواعد البيانات':
         sql_edu = (
             "🗡️ **أداة Sqlmap (مستخرج البيانات الآلي)**\n\n"
@@ -160,7 +146,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, sql_edu, parse_mode='Markdown')
 
-    # --- 🖥️ أوامر Linux الأساسية (أكثر من 50 أمر مشروح) ---
     elif text == '🖥️ أوامر Linux الأساسية':
         linux_list = (
             "🖥️ **موسوعة أوامر Linux للمحترفين:**\n\n"
@@ -180,7 +165,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, linux_list, parse_mode='Markdown')
 
-    # --- 🔐 كسر التشفير ---
     elif text == '🔐 كسر التشفير والهاشات':
         crypto_edu = (
             "🔐 **دليل كسر التشفير (Cracking Encyclopedia):**\n\n"
@@ -197,7 +181,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, crypto_edu, parse_mode='Markdown')
 
-    # --- 🕵️ OSINT جمع المعلومات ---
     elif text == '🕵️ أدوات جمع المعلومات (OSINT)':
         osint_edu = (
             "🕵️ **قسم جمع المعلومات الاستخباراتية (OSINT):**\n\n"
@@ -210,7 +193,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, osint_edu, parse_mode='Markdown')
 
-    # --- 👨‍💻 المطور والرجوع ---
     elif text == '👨‍💻 معلومات المطور':
         dev_info = (
             f"👑 **السجل الرسمي للإمبراطور:**\n\n"
@@ -224,35 +206,25 @@ def handle_commands(message):
     elif text == '🔙 القائمة الرئيسية':
         bot.send_message(cid, "🔙 تم العودة للرئيسية.", reply_markup=main_menu())
 
-# --- تشغيل النظام ---
-print(f"🛡️ [System Online] - Master: {DEV_NAME}")
-from
-flask import request
-
-# --- إعداد الرابط الخاص بمشروعك على Render ---
-# تأكد من وضع الرابط الذي ظهر في صورتك بالضبط
+# --- إعدادات Webhook الخاصة بـ Render ---
 WEBHOOK_HOST = "https://security-bot-6.onrender.com" 
-
-# ثم تأكد أن السطر الذي يليه يجمع الرابط مع التوكن هكذا:
 WEBHOOK_URL = f"{WEBHOOK_HOST}/{TOKEN}"
-
 
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
-    json_str = request.get_data().decode("UTF-8")
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return "OK", 200
-
-@app.route("/")
-def index():
-    return "Bot is running"
+    if request.headers.get('content-type') == 'application/json':
+        json_str = request.get_data().decode("UTF-8")
+        update = telebot.types.Update.de_json(json_str)
+        bot.process_new_updates([update])
+        return "OK", 200
+    else:
+        return "Error", 403
 
 if __name__ == "__main__":
+    print(f"🛡️ [System Online] - Master: {DEV_NAME}")
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
-
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
-
-
- 
+    
+    # تشغيل السيرفر بالمنفذ الصحيح لـ Render
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
