@@ -147,7 +147,7 @@ def handle_commands(message):
         )
         bot.send_message(cid, sql_edu, parse_mode='Markdown')
 
-        elif text == '🐉 أدوات Kali Linux ':
+     elif text == '🐉 أدوات Kali Linux ':
         linux_list = (
             "🖥️ **موسوعة أوامر Linux للمحترفين:**\n\n"
             "• `pwd`: معرفة المسار الحالي.\n"
@@ -157,7 +157,7 @@ def handle_commands(message):
         )
         bot.send_message(cid, linux_list, parse_mode='Markdown')
 
-        elif text == '📡 Nmap: الدليل العملاق':
+     elif text == '📡 Nmap: الدليل العملاق':
         nmap_edu = (
             "📡 **دليل أداة Nmap الاحترافي (للهواتف واللابتوبات)**\n"
             "━━━━━━━━━━━━━━━\n\n"
