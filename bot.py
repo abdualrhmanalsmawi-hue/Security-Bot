@@ -157,7 +157,7 @@ def handle_commands(message):
         )
         bot.send_message(cid, linux_list, parse_mode='Markdown')
 
-    elif text == '📡 Nmap: الدليل العملاق':
+        elif text == '📡 Nmap: الدليل العملاق':
         nmap_edu = (
             "📡 **دليل أداة Nmap الاحترافي (للهواتف واللابتوبات)**\n"
             "━━━━━━━━━━━━━━━\n\n"
