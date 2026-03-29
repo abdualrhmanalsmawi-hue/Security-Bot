@@ -29,11 +29,12 @@ bot = telebot.TeleBot(TOKEN)
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add('🐧 أدوات Termux الموسوعية', '🐉 قسم Kali Linux المتقدم')
+    markup.add('🐧 أدوات Termux ', '🐉 أدوات Kali Linux ')
     markup.add('🔐 كسر التشفير والهاشات', '🎭 هندسة اجتماعية وPhishing')
     markup.add('📡 فحص الشبكات والواي فاي', '🖥️ أوامر Linux الأساسية')
     markup.add('🕵️ أدوات جمع المعلومات (OSINT)', '🛡️ تأمين وحماية هاتفك')
-    markup.add('🔍 فحص IP الذكي', '👨‍💻 معلومات المطور')
+    markup.add('🔍 فحص IP الذكي')
+    markup.add('معلومات مطور البوت 👨‍💻')
     return markup
 
 def termux_tools_menu():
@@ -73,7 +74,7 @@ def handle_commands(message):
     cid = message.chat.id
     text = message.text
 
-    if text == '🐧 أدوات Termux الموسوعية':
+    if text == '🐧 أدوات Termux ':
         bot.send_message(cid, "🛠️ **أدوات Termux المتاحة (الدليل الموسوعي):**", reply_markup=termux_tools_menu())
 
     elif text == '📡 Nmap: الدليل العملاق':
@@ -146,24 +147,45 @@ def handle_commands(message):
         )
         bot.send_message(cid, sql_edu, parse_mode='Markdown')
 
-    elif text == '🖥️ أوامر Linux الأساسية':
+        elif text == '🐉 أدوات Kali Linux ':
         linux_list = (
             "🖥️ **موسوعة أوامر Linux للمحترفين:**\n\n"
-            "• `pwd`: معرفة المسار الحالي الذي تتواجد فيه.\n"
-            "• `ls -la`: عرض كافة الملفات بما فيها الملفات المخفية.\n"
-            "• `mkdir [name]`: إنشاء مجلد جديد.\n"
-            "• `touch [file]`: إنشاء ملف فارغ.\n"
-            "• `chmod 777 [file]`: إعطاء كافة الصلاحيات للملف.\n"
-            "• `chown user:group [file]`: تغيير ملكية الملف.\n"
-            "• `cat [file]`: قراءة محتوى الملف بسرعة.\n"
-            "• `nano [file]`: محرر نصوص للتعديل على الملفات.\n"
-            "• `find / -name [file]`: البحث عن ملف في كامل النظام.\n"
-            "• `df -h`: عرض مساحة القرص المتوفرة.\n"
-            "• `top`: عرض العمليات التي تستهلك المعالج حالياً.\n"
-            "• `kill -9 [PID]`: إنهاء عملية معينة بالقوة.\n"
-            "• `ifconfig`: عرض إعدادات الشبكة و الـ IP."
+            "• `pwd`: معرفة المسار الحالي.\n"
+            "• `ls -la`: عرض كافة الملفات بما فيها المخفية.\n"
+            "• `sudo su`: الدخول بصلاحيات الجذر (Root).\n"
+            "• `apt update`: تحديث مستودعات النظام."
         )
         bot.send_message(cid, linux_list, parse_mode='Markdown')
+
+    elif text == '📡 Nmap: الدليل العملاق':
+        nmap_edu = (
+            "📡 **دليل أداة Nmap الاحترافي (للهواتف واللابتوبات)**\n"
+            "━━━━━━━━━━━━━━━\n\n"
+            "📥 **أولاً: التثبيت (Installation):**\n"
+            "• **على Termux:**\n"
+            "`pkg update && pkg install nmap -y`\n"
+            "• **على Linux/Laptop:**\n"
+            "`sudo apt update && sudo apt install nmap -y`\n\n"
+            "⚙️ **ثانياً: خريطة الأوامر والشرح التفصيلي:**\n\n"
+            "1️⃣ **فحص المنافذ المفتوحة:**\n"
+            "`nmap [Target_IP]`\n\n"
+            "2️⃣ **كشف نظام التشغيل:**\n"
+            "`sudo nmap -O [Target_IP]`\n\n"
+            "3️⃣ **فحص الخدمات والإصدارات:**\n"
+            "`nmap -sV [Target_IP]`\n\n"
+            "4️⃣ **الفحص الشامل (Aggressive):**\n"
+            "`nmap -A [Target_IP]`\n\n"
+            "5️⃣ **الفحص المتخفي (Stealth):**\n"
+            "`sudo nmap -sS [Target_IP]`\n\n"
+            "6️⃣ **فحص شبكة كاملة:**\n"
+            "`nmap 192.168.1.0/24`\n\n"
+            "7️⃣ **البحث عن الثغرات تلقائياً:**\n"
+            "`nmap --script vuln [Target_IP]`\n\n"
+            "━━━━━━━━━━━━━━━\n"
+            "💡 **نصيحة للإمبراطور:** عند استخدام اللابتوب، دائماً استخدم `sudo` قبل الأوامر."
+        )
+        bot.send_message(cid, nmap_edu, parse_mode='Markdown')
+
 
     elif text == '🔐 كسر التشفير والهاشات':
         crypto_edu = (
