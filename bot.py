@@ -16,7 +16,7 @@ def home():
     return "البوت يعمل بنجاح!"
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN ='8586434472:AAHonweZ2eLgVMMjRluntgutYtJ0QeHjz-8'
+TOKEN ='8586434472:AAF4lOQjf8WnwvKHyePxHS4JDKrZeH5HIgI'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
