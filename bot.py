@@ -88,140 +88,77 @@ def handle_commands(message):
             "الوصف: فحص أشهر 1000 منفذ لمعرفة الحالة (مفتوح/مغلق).\n\n"
             "2️⃣ **فحص التخفي (Stealth Scan):**\n"
             "`nmap -sS [Target_IP]`\n"
-            "الوصف: يستخدم حزم SYN ولا يكمل المصافحة الثلاثية (3-way handshake) لتجنب كشفه بواسطة جدران الحماية.\n\n"
-            "3️⃣ **كشف الخدمات والإصدارات (Version Detection):**\n"
-            "`nmap -sV [Target_IP]`\n"
-            "الوصف: تحديد نوع البرنامج الذي يعمل على المنفذ (مثل Apache 2.4.41).\n\n"
-            "4️⃣ **كشف نظام التشغيل (OS Detection):**\n"
-            "`nmap -O [Target_IP]`\n"
-            "الوصف: إرسال حزم وتحليل الرد لتوقع النظام (Linux, Windows, Cisco).\n\n"
+            "الوصف: يستخدم حزم SYN ولا يكمل المصافحة الثلاثية.\n\n"
+            "3️⃣ **كشف الخدمات والإصدارات:**\n"
+            "`nmap -sV [Target_IP]`\n\n"
+            "4️⃣ **كشف نظام التشغيل:**\n"
+            "`nmap -O [Target_IP]`\n\n"
             "5️⃣ **الفحص الشامل (Aggressive Scan):**\n"
-            "`nmap -A [Target_IP]`\n"
-            "الوصف: يجمع بين كشف الإصدار، نظام التشغيل، وتتبع المسار (Traceroute).\n\n"
+            "`nmap -A [Target_IP]`\n\n"
             "6️⃣ **فحص الثغرات (NSE Scripts):**\n"
             "`nmap --script vuln [Target_IP]`\n"
-            "الوصف: البحث عن ثغرات CVE مسجلة داخل النظام المستهدف."
+            "━━━━━━━━━━━━━━━\n"
+            "💡 **نصيحة للإمبراطور:** عند استخدام اللابتوب، دائماً استخدم `sudo` قبل الأوامر."
         )
         bot.send_message(cid, nmap_edu, parse_mode='Markdown')
 
     elif text == '💀 Metasploit: الاحترافي':
         msf_edu = (
             "💀 **إطار عمل Metasploit (الوحش الرقمي)**\n\n"
-            "📥 **التثبيت:**\n"
-            "`pkg install wget curl openssh -y`\n"
-            "`source <(curl -fsSL https://kutt.it/msf)`\n\n"
             "⚙️ **دليل المهام والعمليات:**\n\n"
-            "• **msfconsole**: تشغيل الواجهة الرسومية النصية.\n"
-            "• **search**: البحث عن ثغرة (مثال: `search eternalblue`).\n"
-            "• **info**: عرض معلومات مفصلة عن ثغرة معينة.\n"
-            "• **set RHOSTS**: تحديد الـ IP الخاص بالضحية.\n"
-            "• **set LHOST**: تحديد الـ IP الخاص بجهازك لاستلام الاختراق.\n"
+            "• **msfconsole**: تشغيل الواجهة.\n"
+            "• **search**: البحث عن ثغرة.\n"
             "• **exploit**: البدء بالهجوم الفعلي.\n\n"
             "💡 **أوامر التحكم (Meterpreter):**\n"
-            "- `sysinfo`: عرض معلومات نظام الضحية.\n"
-            "- `screenshot`: التقاط صورة لشاشة الضحية.\n"
-            "- `keyscan_start`: البدء بتسجيل كل ما يكتبه الضحية (Keylogger).\n"
-            "- `webcam_list`: عرض الكاميرات المتوفرة في الجهاز."
+            "- `sysinfo`: عرض معلومات النظام.\n"
+            "- `screenshot`: التقاط صورة للشاشة."
         )
         bot.send_message(cid, msf_edu, parse_mode='Markdown')
 
     elif text == '🗡️ Sqlmap: سحب قواعد البيانات':
         sql_edu = (
             "🗡️ **أداة Sqlmap (مستخرج البيانات الآلي)**\n\n"
-            "📥 **التثبيت:**\n"
-            "`pkg install python git -y`\n"
-            "`git clone https://github.com/sqlmapproject/sqlmap`\n\n"
-            "⚙️ **مراحل الاستخراج بالتفصيل:**\n\n"
             "1️⃣ **البحث عن قواعد البيانات:**\n"
             "`python sqlmap.py -u [URL] --dbs`\n\n"
-            "2️⃣ **استخراج الجداول:**\n"
-            "`python sqlmap.py -u [URL] -D [Database_Name] --tables`\n\n"
-            "3️⃣ **استخراج الأعمدة:**\n"
-            "`python sqlmap.py -u [URL] -D [DB] -T [Table] --columns`\n\n"
-            "4️⃣ **سحب البيانات النهائية:**\n"
-            "`python sqlmap.py -u [URL] -D [DB] -T [Tab] -C [Col1,Col2] --dump`\n\n"
-            "⚙️ **خيارات التخفي والقوة:**\n"
-            "- `--random-agent`: تغيير بصمة المتصفح.\n"
-            "- `--proxy`: العمل عبر بروكسي للتخفي.\n"
-            "- `--level=5`: أقصى مستوى للفحص والتحليل."
+            "2️⃣ **سحب البيانات النهائية:**\n"
+            "`python sqlmap.py -u [URL] -D [DB] -T [Tab] --dump`"
         )
         bot.send_message(cid, sql_edu, parse_mode='Markdown')
 
-     elif text == '🐉 أدوات Kali Linux ':
+    elif text == '🐉 أدوات Kali Linux ':
         linux_list = (
             "🖥️ **موسوعة أوامر Linux للمحترفين:**\n\n"
             "• `pwd`: معرفة المسار الحالي.\n"
-            "• `ls -la`: عرض كافة الملفات بما فيها المخفية.\n"
+            "• `ls -la`: عرض كافة الملفات.\n"
             "• `sudo su`: الدخول بصلاحيات الجذر (Root).\n"
             "• `apt update`: تحديث مستودعات النظام."
         )
         bot.send_message(cid, linux_list, parse_mode='Markdown')
 
-     elif text == '📡 Nmap: الدليل العملاق':
-        nmap_edu = (
-            "📡 **دليل أداة Nmap الاحترافي (للهواتف واللابتوبات)**\n"
-            "━━━━━━━━━━━━━━━\n\n"
-            "📥 **أولاً: التثبيت (Installation):**\n"
-            "• **على Termux:**\n"
-            "`pkg update && pkg install nmap -y`\n"
-            "• **على Linux/Laptop:**\n"
-            "`sudo apt update && sudo apt install nmap -y`\n\n"
-            "⚙️ **ثانياً: خريطة الأوامر والشرح التفصيلي:**\n\n"
-            "1️⃣ **فحص المنافذ المفتوحة:**\n"
-            "`nmap [Target_IP]`\n\n"
-            "2️⃣ **كشف نظام التشغيل:**\n"
-            "`sudo nmap -O [Target_IP]`\n\n"
-            "3️⃣ **فحص الخدمات والإصدارات:**\n"
-            "`nmap -sV [Target_IP]`\n\n"
-            "4️⃣ **الفحص الشامل (Aggressive):**\n"
-            "`nmap -A [Target_IP]`\n\n"
-            "5️⃣ **الفحص المتخفي (Stealth):**\n"
-            "`sudo nmap -sS [Target_IP]`\n\n"
-            "6️⃣ **فحص شبكة كاملة:**\n"
-            "`nmap 192.168.1.0/24`\n\n"
-            "7️⃣ **البحث عن الثغرات تلقائياً:**\n"
-            "`nmap --script vuln [Target_IP]`\n\n"
-            "━━━━━━━━━━━━━━━\n"
-            "💡 **نصيحة للإمبراطور:** عند استخدام اللابتوب، دائماً استخدم `sudo` قبل الأوامر."
-        )
-        bot.send_message(cid, nmap_edu, parse_mode='Markdown')
-
-
     elif text == '🔐 كسر التشفير والهاشات':
         crypto_edu = (
             "🔐 **دليل كسر التشفير (Cracking Encyclopedia):**\n\n"
             "1️⃣ **John the Ripper:** الأداة الأقوى لكسر الهاشات.\n"
-            "   `pkg install john -y` \n"
-            "   أمر الكسر: `john --format=[type] hash.txt` \n\n"
             "2️⃣ **Hash-Identifier:** لمعرفة نوع التشفير.\n"
-            "   `pkg install hash-identifier -y` \n\n"
-            "3️⃣ **Hydra:** للتخمين على البروتوكولات (Brute Force).\n"
-            "   `hydra -l user -P passlist.txt [IP] ssh` \n\n"
-            "💡 **أنواع الهاشات الشائعة:**\n"
-            "- **MD5**: 32 حرف (ضعيف).\n"
-            "- **SHA-256**: 64 حرف (قوي)."
+            "3️⃣ **Hydra:** للتخمين على البروتوكولات (Brute Force)."
         )
         bot.send_message(cid, crypto_edu, parse_mode='Markdown')
 
     elif text == '🕵️ أدوات جمع المعلومات (OSINT)':
         osint_edu = (
             "🕵️ **قسم جمع المعلومات الاستخباراتية (OSINT):**\n\n"
-            "• **TheHarvester**: لجمع الإيميلات والحسابات من جوجل وبينج.\n"
-            "  `pkg install theharvester` \n\n"
-            "• **Sherlock**: للبحث عن أي يوزر نيم في أكثر من 300 موقع تواصل.\n"
-            "  `pkg install sherlock` \n\n"
-            "• **Whois**: لجلب معلومات صاحب أي نطاق (Domain).\n"
-            "  `pkg install whois`"
+            "• **Sherlock**: للبحث عن أي يوزر نيم.\n"
+            "• **Whois**: لجلب معلومات صاحب أي نطاق."
         )
         bot.send_message(cid, osint_edu, parse_mode='Markdown')
 
-    elif text == '👨‍💻 معلومات المطور':
+    elif text == 'معلومات مطور البوت 👨‍💻':
         dev_info = (
             f"👑 **السجل الرسمي للإمبراطور:**\n\n"
             f"👤 **الاسم:** {DEV_NAME}\n"
             f"🛠️ **الرتبة:** {DEV_TITLE}\n"
             f"🆔 **اليوزر:** {DEV_USER}\n\n"
-            "هذا النظام هو نتاج عمل مستمر لتقديم أفضل الأدوات والخبرات في عالم الأمن السيبراني."
+            "هذا النظام هو نتاج عمل مستمر لتقديم أفضل الأدوات."
         )
         bot.send_message(cid, dev_info, parse_mode='Markdown')
 
@@ -243,10 +180,8 @@ def webhook():
         return "Error", 403
 
 if __name__ == "__main__":
-    print(f"🛡️ [System Online] - Master: {DEV_NAME}")
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL)
-    
-    # تشغيل السيرفر بالمنفذ الصحيح لـ Render
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
