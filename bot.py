@@ -16,7 +16,28 @@ def home():
     return "البوت يعمل بنجاح!"
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN ='8586434472:AAF4lOQjf8WnwvKHyePxHS4JDKrZeH5HIgI'
+TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
+DEV_NAME = "عبدالرحمن السماوي"
+DEV_TITLE = "الامبراطور"
+DEV_USER = "@AL22009"
+
+bot = telebot.TeleBot(TOKEN)
+
+# ==========================================
+#              هيكلة القوائم الاحترافية
+# ==========================================
+
+def main_menu():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    # ملاحظة: تم توحيد النصوص لضمان استجابة البوت
+    markup.add('🐧 أدوات Termux', '🐉 أدوات Kali Linux')
+    markup.add('🔐 كسر التشفير والهاشات', '🎭 هندسة اجتماعية وPhishing')
+    markup.add('📡 فحص الشبكات والواي فاي', '🖥️ أوامر Linux الأساسية')
+    markup.add('🕵️ أدوات جمع المعلومات (OSINT)', '🛡️ تأمين وحماية هاتفك')
+    markup.add('🔍 فحص IP الذكي')
+    markup.add('👨‍💻 معلومات المطور')
+    return markup
+'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
