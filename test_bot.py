@@ -1,74 +1,121 @@
+import telebot
 import os
 import threading
-from flask import Flask
-import telebot
+from telebot import types
 from google import genai
+from flask import Flask
 
-# 1. إعداد خادم ويب Flask وهمي لإرضاء خوادم Render وفتح المنفذ (Port)
-app = Flask(__name__)
+TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
+bot = telebot.TeleBot(TOKEN)
+
+# تعريف مفتاح الذكاء الاصطناعي والعميل لـ Gemini
+GEMINI_API_KEY = "AQ.Ab8RN6Izye9nO-FUxhx34rpmDjUQVB4YDZWKpjJuB6dL6Jbr2w"
+ai_client = genai.Client(api_key=GEMINI_API_KEY)
+
+# كود Flask لحماية السيرفر من الإغلاق في Render بسبب المنافذ
+app = Flask('')
 
 @app.route('/')
 def home():
-    return "Bot is running perfectly!"
+    return "Al-Emperor Bot is running online! 🚀"
 
 def run_flask():
-    # Render يمرر المنفذ تلقائياً عبر متغير البيئة PORT
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-# 2. إعداد التوكنات والمفاتيح بأمان (تمنع حظر جيت هاب وتحمي بياناتك)
-# تأكد من وضع المفاتيح الحقيقية هنا أو عبر الـ Environment Variables في ريندر
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "7963364506:AAElSg7V_U4w_XlA97-0vR8f-Xq0bXz978c") 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "ضع_مفتاح_جيميني_الجديد_هنا")
-
-bot = telebot.TeleBot(BOT_TOKEN)
-ai_client = genai.Client(api_key=GEMINI_API_KEY)
-
-# حالات المستخدمين لتتبع المحادثة مع جيميني
-user_states = {}
-
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+    
+# كود الرسالة الترحيبية للمستخدم
+ADMIN_ID = 1036157698
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    # كود الترحيب والأزرار الخاص بك
-    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn = telebot.types.KeyboardButton("🤖 اسأل الذكاء الاصطناعي")
-    markup.add(btn)
-    bot.reply_to(message, f"👋 أهلاً بك يا {message.from_user.first_name} في فريق ROOT-7!\nإختر من القائمة أدناه لتجربة النظام:", reply_markup=markup)
+    user_id = message.from_user.id
+    first_name = message.from_user.first_name
+    username = message.from_user.username
 
-@bot.message_handler(func=lambda message: message.text == "🤖 اسأل الذكاء الاصطناعي")
-def ai_mode(message):
-    user_states[message.chat.id] = 'AI_MODE'
-    bot.reply_to(message, "🤖 مرحباً بك في محرك الذكاء الاصطناعي لجيميني!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:")
+    file_name = "users.txt"
+    if not os.path.exists(file_name): 
+        with open(file_name, "w") as f:
+            pass
+    with open(file_name, "r") as f:
+        exiting_users = f.read().splitlines()
 
-@bot.message_handler(func=lambda message: user_states.get(message.chat.id) == 'AI_MODE')
-def handle_ai_request(message):
-    if message.text == " العودة للقائمة الرئيسية":
-        user_states[message.chat.id] = None
-        bot.reply_to(message, "تمت العودة للقائمة الرئيسية.")
+    if str(user_id) not in exiting_users:
+        with open(file_name, "a") as f:
+            f.write(f"{user_id}\n")
+            alert = ( f" مستخدم جديد دخل البوت الآن !**🔔 \n\n"
+            f"👤 الاسم : {first_name}\n"
+            f"🆔 الآيدي : `{user_id}`\n"
+            f"🧷 اليوزر : @{username if username else 'لا يوجد يوزر '}" )
+        bot.send_message(ADMIN_ID, alert, parse_mode="Markdown")
+            
+    # إنشاء لوحة التحكم بشكل صريح لإجبار الأزرار على الظهور
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_ai = types.KeyboardButton('🤖 اسأل الذكاء الاصطناعي')
+    markup.add(btn_ai)
+            
+    test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
+    bot.send_message(message.chat.id, test, reply_markup=markup)
+
+# كود حساب عدد المستخدمين الذين زاروا البوت
+@bot.message_handler(commands=['stats'])
+def get_starts(message):
+    if message.from_user.id == ADMIN_ID:
+        file_name = "users.txt"
+        if os.path.exists(file_name):
+            with open(file_name, "r") as f:
+                total_users = len(f.read().splitlines())
+                bot.send_message(message.chat.id, f"** إحصائيات البوت الكلية 📊**\n\n👥 عدد المستخدمين من بداية الانشاء: `{total_users}`")
+        else:
+            bot.send_message(message.chat.id, "❌ لا توجد بيانات حالياً.")
+    else:
+        bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط. ")
+
+# ==========================================
+#         🤖 محرك الذكاء الاصطناعي
+# ==========================================
+@bot.message_handler(func=lambda message: message.text == '🤖 اسأل الذكاء الاصطناعي')
+def ai_welcome_msg(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_back = types.KeyboardButton('⬅️ العودة للقائمة الرئيسية')
+    markup.add(btn_back)
+
+    msg = bot.send_message(message.chat.id, "🤖 مرحباً بك في محرّك الذكاء الاصطناعي لجيميني!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:", reply_markup=markup)
+    bot.register_next_step_handler(msg, call_gemini_ai)
+
+def call_gemini_ai(message):
+    if message.text == '⬅️ العودة للقائمة الرئيسية':
+        send_welcome(message)
         return
 
+    bot.send_chat_action(message.chat.id, 'typing')
+    
     try:
-        # إرسال الطلب إلى موديل جيميني المستقر
         response = ai_client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=message.text
+            contents=message.text,
         )
-        bot.reply_to(message, response.text)
-    except Exception as e:
-        bot.reply_to(message, f" حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي:\n{str(e)}")
-
-# 3. تشغيل النظام عبر الـ Threads الموازية لمنع التعارض
-if __name__ == "__main__":
-    # تشغيل سيرفر ويب Flask في الخلفية لفتح البورت فوراً لـ Render
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-    
-    # تنظيف اتصالات التليجرام وبدء استقبال الرسائل
-    try:
-        bot.delete_webhook(drop_pending_updates=True)
-    except:
-        pass
+        bot.send_message(message.chat.id, response.text, parse_mode="Markdown")
         
-    print("🚀 Server is live and Bot is listening...")
-    bot.polling(none_stop=True, skip_pending_updates=True)
+        msg = bot.send_message(message.chat.id, "✨ اسألني عن أي شيء آخر، أو اضغط على زر العودة بالأسفل:")
+        bot.register_next_step_handler(msg, call_gemini_ai)
+        
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي: {e}")
+
+# دالة مخصصة لتنظيف الاتصال وبدء الـ Polling
+def start_bot_polling():
+    try:
+        # 🔥 الأمر السحري لحذف أي Webhook قديم مسبب للتعارض وحل المشكلة تماماً!
+        bot.delete_webhook(drop_pending_updates=True)
+        print("[Telegram] Webhook deleted successfully. Starting Polling...")
+    except Exception as e:
+        print(f"[Telegram] Error deleting webhook: {e}")
+        
+    bot.polling(none_stop=True)
+
+if __name__ == "__main__":
+    # 1. تشغيل البوت في خيط مستقل
+    t = threading.Thread(target=start_bot_polling)
+    t.start()
+    
+    # 2. تشغيل Flask في الخيط الأساسي ليمسك الـ Port فوراً في Render
+    run_flask()
