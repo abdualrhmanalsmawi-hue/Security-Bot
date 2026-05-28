@@ -13,10 +13,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "البوت يعمل بنجاح!"
+    return "البوت التجريبي يعمل بنجاح!"
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN = '8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNU1NYcGQ'
+TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
@@ -53,7 +53,7 @@ def termux_tools_menu():
 @bot.message_handler(commands=['start'])
 def welcome(message):
     welcome_msg = (
-        f"👑 **مرحباً بك يابطل في نظامك المتطور**\n\n"
+        f"👑 **مرحباً بك يابطل في نظامك التجريبي المتطور**\n\n"
         "هذا البوت تم تحديثه ليكون **أضخم موسوعة برمجية** على تليجرام، تم تصميمه ليكون مرجع اساسي للعلوم و المعرفة التقنية.\n\n"
         "🚀 **محتويات هذه النسخة العملاقة:**\n"
         "• شرح تفصيلي لكل خيار (Flag) داخل الأوامر (Nmap, Sqlmap, etc).\n"
@@ -168,8 +168,9 @@ def handle_commands(message):
     elif text == '🔙 القائمة الرئيسية':
         bot.send_message(cid, "🔙 تم العودة للرئيسية.", reply_markup=main_menu())
 
-# --- إعدادات Webhook الخاصة بـ Render ---
-WEBHOOK_HOST = "https://security-bot-6.onrender.com" 
+# --- إعدادات Webhook التجريبية لـ Render ---
+# تم تعديل الرابط ليكون منفصلاً عن البوت الرئيسي لمنع التداخل والتعليق
+WEBHOOK_HOST = "https://security-bot-test.onrender.com" 
 WEBHOOK_URL = f"{WEBHOOK_HOST}/{TOKEN}"
 
 @app.route(f"/{TOKEN}", methods=["POST"])
@@ -183,21 +184,26 @@ def webhook():
         return "Error", 403
 
 # ==========================================
-#        منطق التشغيل الذكي (مكاني / سيرفر)
+#      ⚙️ تعديل التفعيل الذكي للمحيط المحلي والويب ⚙️
 # ==========================================
 if __name__ == "__main__":
     print(f"🛡️ [System Online] - Master: {DEV_NAME}")
     
-    # التحقق: إذا كان يعمل على سيرفر Render (سيتوفر متغير PORT في النظام)
-    if 'PORT' in os.environ:
-        print("🌐 التشغيل بنظام الـ Webhook على سيرفر خارجي...")
+    # إذا اشتغل الكود محلياً على اللابتوب
+    if 'PORT' not in os.environ:
+        print("=========================================")
+        print("💻 بيئة محليّة مُكتشفة لملف test_bot.py")
+        print("🔥 نظام الإمبراطور التجريبي نشط الآن ويستمع محلياً...")
+        print("=========================================")
+        bot.remove_webhook()   
+        time.sleep(1)
+        bot.infinity_polling() 
+    else:
+        # التشغيل السحابي عندما يتم ربطه بـ Render كخدمة منفصلة
+        print("=========================================")
+        print("🌐 تشغيل السيرفر السحابي لـ البوت التجريبي...")
+        print("=========================================")
         bot.remove_webhook()
         bot.set_webhook(url=WEBHOOK_URL)
         port = int(os.environ.get('PORT', 10000))
         app.run(host='0.0.0.0', port=port)
-    else:
-        # التشغيل للتجربة المحلية على لابتوب الـ ZBook
-        print("💻 بيئة محليّة مُكتشفة! التشغيل بنظام الـ Polling المباشر للتجربة...")
-        bot.remove_webhook() # إزالة أي ويبهوك قديم معلق ليعمل البولينج
-        time.sleep(1)
-        bot.infinity_polling()
