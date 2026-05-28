@@ -16,7 +16,7 @@ def home():
     return "البوت يعمل بنجاح!"
 
 # --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
+TOKEN = '8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNU1NYcGQ'
 DEV_NAME = "عبدالرحمن السماوي"
 DEV_TITLE = "الامبراطور"
 DEV_USER = "@AL22009"
@@ -29,7 +29,6 @@ bot = telebot.TeleBot(TOKEN)
 
 def main_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    # ملاحظة: تم توحيد النصوص لضمان استجابة البوت
     markup.add('🐧 أدوات Termux', '🐉 أدوات Kali Linux')
     markup.add('🔐 كسر التشفير والهاشات', '🎭 هندسة اجتماعية وPhishing')
     markup.add('📡 فحص الشبكات والواي فاي', '🖥️ أوامر Linux الأساسية')
@@ -75,7 +74,6 @@ def handle_commands(message):
     cid = message.chat.id
     text = message.text
 
-    # تصحيح: تطابق النص مع زر القائمة الرئيسية
     if text == '🐧 أدوات Termux':
         bot.send_message(cid, "🛠️ **أدوات Termux المتاحة (الدليل الموسوعي):**", reply_markup=termux_tools_menu())
 
@@ -157,7 +155,6 @@ def handle_commands(message):
         )
         bot.send_message(cid, osint_edu, parse_mode='Markdown')
 
-    # تصحيح: تطابق النص مع زر المطور في القائمة الرئيسية
     elif text == '👨‍💻 معلومات المطور':
         dev_info = (
             f"👑 **السجل الرسمي للإمبراطور:**\n\n"
@@ -185,11 +182,22 @@ def webhook():
     else:
         return "Error", 403
 
+# ==========================================
+#        منطق التشغيل الذكي (مكاني / سيرفر)
+# ==========================================
 if __name__ == "__main__":
     print(f"🛡️ [System Online] - Master: {DEV_NAME}")
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
     
-    # تشغيل السيرفر بالمنفذ الصحيح لـ Render
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    # التحقق: إذا كان يعمل على سيرفر Render (سيتوفر متغير PORT في النظام)
+    if 'PORT' in os.environ:
+        print("🌐 التشغيل بنظام الـ Webhook على سيرفر خارجي...")
+        bot.remove_webhook()
+        bot.set_webhook(url=WEBHOOK_URL)
+        port = int(os.environ.get('PORT', 10000))
+        app.run(host='0.0.0.0', port=port)
+    else:
+        # التشغيل للتجربة المحلية على لابتوب الـ ZBook
+        print("💻 بيئة محليّة مُكتشفة! التشغيل بنظام الـ Polling المباشر للتجربة...")
+        bot.remove_webhook() # إزالة أي ويبهوك قديم معلق ليعمل البولينج
+        time.sleep(1)
+        bot.infinity_polling()
