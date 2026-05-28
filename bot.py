@@ -1,195 +1,130 @@
-import os
 import telebot
+import os
+import threading
 from telebot import types
-import random
-import string
-import requests
-import time
-from flask import Flask, request
-from threading import Thread
+from google import genai
+from flask import Flask
 
-# --- إعدادات السيرفر ---
-app = Flask(__name__)
+TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
+bot = telebot.TeleBot(TOKEN)
+
+# تعريف مفتاح الذكاء الاصطناعي والعميل لـ Gemini
+GEMINI_API_KEY = "AQ.Ab8RN6Izye9nO-FUxhx34rpmDjUQVB4YDZWKpjJuB6dL6Jbr2w"
+ai_client = genai.Client(api_key=GEMINI_API_KEY)
+
+# كود Flask لحماية السيرفر من الإغلاق في Render بسبب المنافذ
+app = Flask('')
 
 @app.route('/')
 def home():
-    return "البوت يعمل بنجاح!"
+    return "Al-Emperor Bot is running online! 🚀"
 
-# --- إعدادات السيادة والمطور (ثوابت لا تتغير) ---
-TOKEN ='8586434472:AAF4lOQjf8WnwvKHyePxHS4JDKrZeH5HIgI'
-DEV_NAME = "عبدالرحمن السماوي"
-DEV_TITLE = "الامبراطور"
-DEV_USER = "@AL22009"
-
-bot = telebot.TeleBot(TOKEN)
-
-# ==========================================
-#              هيكلة القوائم الاحترافية
-# ==========================================
-
-def main_menu():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    # ملاحظة: تم توحيد النصوص لضمان استجابة البوت
-    markup.add('🐧 أدوات Termux', '🐉 أدوات Kali Linux')
-    markup.add('🔐 كسر التشفير والهاشات', '🎭 هندسة اجتماعية وPhishing')
-    markup.add('📡 فحص الشبكات والواي فاي', '🖥️ أوامر Linux الأساسية')
-    markup.add('🕵️ أدوات جمع المعلومات (OSINT)', '🛡️ تأمين وحماية هاتفك')
-    markup.add('🔍 فحص IP الذكي')
-    markup.add('👨‍💻 معلومات المطور')
-    return markup
-
-def termux_tools_menu():
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add('📡 Nmap: الدليل العملاق', '💀 Metasploit: الاحترافي')
-    markup.add('🗡️ Sqlmap: سحب قواعد البيانات', '⌨️ Crunch: توليد الباسووردات')
-    markup.add('🐙 Git: المشاريع البرمجية', '🐍 Python: بيئة المطور')
-    markup.add('🦈 Tshark: صيد الحزم', '🛡️ حماية وتأمين Termux')
-    markup.add('🔙 القائمة الرئيسية')
-    return markup
-
-# ==========================================
-#            دالة الترحيب والبداية
-# ==========================================
-
+def run_flask():
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+    
+# كود الرسالة الترحيبية للمستخدم
+ADMIN_ID = 1036157698
 @bot.message_handler(commands=['start'])
-def welcome(message):
-    welcome_msg = (
-        f"👑 **مرحباً بك يابطل في نظامك المتطور**\n\n"
-        "هذا البوت تم تحديثه ليكون **أضخم موسوعة برمجية** على تليجرام، تم تصميمه ليكون مرجع اساسي للعلوم و المعرفة التقنية.\n\n"
-        "🚀 **محتويات هذه النسخة العملاقة:**\n"
-        "• شرح تفصيلي لكل خيار (Flag) داخل الأوامر (Nmap, Sqlmap, etc).\n"
-        "• دروس تعليمية حول كيفية عمل الثغرات الأمنية.\n"
-        "• قسم خاص لأوامر Linux التي يحتاجها أي مختبر اختراق.\n"
-        "• أدوات جمع المعلومات الاستخباراتية مفتوحة المصدر (OSINT).\n\n"
-        f"👨‍💻 **المطور:** {DEV_NAME}\n"
-        "استخدم القائمة أدناه لبدء رحلة الاحتراف الشاملة 👇"
-    )
-    bot.send_message(message.chat.id, welcome_msg, parse_mode='Markdown', reply_markup=main_menu())
+def send_welcome(message):
+    user_id = message.from_user.id
+    first_name = message.from_user.first_name
+    username = message.from_user.username
 
-# ==========================================
-#          معالجة البيانات والشروحات الضخمة
-# ==========================================
+    file_name = "users.txt"
+    if not os.path.exists(file_name): 
+        with open(file_name, "w") as f:
+            pass
+    with open(file_name, "r") as f:
+        exiting_users = f.read().splitlines()
 
-@bot.message_handler(func=lambda message: True)
-def handle_commands(message):
-    cid = message.chat.id
-    text = message.text
+    if str(user_id) not in exiting_users:
+        with open(file_name, "a") as f:
+            f.write(f"{user_id}\n")
+            alert = ( f" مستخدم جديد دخل البوت الآن !**🔔 \n\n"
+            f"👤 الاسم : {first_name}\n"
+            f"🆔 الآيدي : `{user_id}`\n"
+            f"🧷 اليوزر : @{username if username else 'لا يوجد يوزر '}" )
+        bot.send_message(ADMIN_ID, alert, parse_mode="Markdown")
+            
+    # إنشاء لوحة التحكم بشكل صريح لإجبار الأزرار على الظهور
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    
+    # تعريف الأزرار الثلاثة منفصلة بشكل صحيح
+    btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي')
+    btn_cyber = types.KeyboardButton('🛡️ الأمن السيبراني')
+    btn_make = types.KeyboardButton('🛠️ صنع بوتات تلجرام ')
+    btn_dev = types.KeyboardButton('💁‍♂️ مطورو البوت')
+    
+    # توزيع الأزرار: أول زرين بجانب بعضهما، والزر الثالث في سطر منفصل بالأسفل
+    markup.add(btn_ai, btn_cyber)
+    markup.add(btn_make)
+    markup.add(btn_dev)
+            
+    test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
+    bot.send_message(message.chat.id, test, reply_markup=markup)
 
-    # تصحيح: تطابق النص مع زر القائمة الرئيسية
-    if text == '🐧 أدوات Termux':
-        bot.send_message(cid, "🛠️ **أدوات Termux المتاحة (الدليل الموسوعي):**", reply_markup=termux_tools_menu())
-
-    elif text == '📡 Nmap: الدليل العملاق':
-        nmap_edu = (
-            "📡 **أداة Nmap (الماسح الشبكي الأسطوري)**\n\n"
-            "📥 **أوامر التثبيت:**\n"
-            "`pkg update && pkg install nmap -y`\n\n"
-            "⚙️ **دليل الأوامر وخيارات الفحص (Flags):**\n\n"
-            "1️⃣ **الفحص السريع (Basic Scan):**\n"
-            "`nmap [Target_IP]`\n"
-            "الوصف: فحص أشهر 1000 منفذ لمعرفة الحالة (مفتوح/مغلق).\n\n"
-            "2️⃣ **فحص التخفي (Stealth Scan):**\n"
-            "`nmap -sS [Target_IP]`\n"
-            "الوصف: يستخدم حزم SYN ولا يكمل المصافحة الثلاثية لتجنب كشفه.\n\n"
-            "3️⃣ **كشف الخدمات والإصدارات (Version Detection):**\n"
-            "`nmap -sV [Target_IP]`\n"
-            "الوصف: تحديد نوع البرنامج الذي يعمل على المنفذ.\n\n"
-            "4️⃣ **كشف نظام التشغيل (OS Detection):**\n"
-            "`nmap -O [Target_IP]`\n"
-            "الوصف: إرسال حزم وتحليل الرد لتوقع النظام.\n\n"
-            "5️⃣ **الفحص الشامل (Aggressive Scan):**\n"
-            "`nmap -A [Target_IP]`\n\n"
-            "6️⃣ **فحص الثغرات (NSE Scripts):**\n"
-            "`nmap --script vuln [Target_IP]`"
-        )
-        bot.send_message(cid, nmap_edu, parse_mode='Markdown')
-
-    elif text == '💀 Metasploit: الاحترافي':
-        msf_edu = (
-            "💀 **إطار عمل Metasploit (الوحش الرقمي)**\n\n"
-            "📥 **التثبيت:**\n"
-            "`pkg install wget curl openssh -y`\n"
-            "`source <(curl -fsSL https://kutt.it/msf)`\n\n"
-            "⚙️ **دليل المهام والعمليات:**\n\n"
-            "• **msfconsole**: تشغيل الواجهة.\n"
-            "• **search**: البحث عن ثغرة.\n"
-            "• **set RHOSTS**: تحديد الـ IP الضحية.\n"
-            "• **exploit**: البدء بالهجوم."
-        )
-        bot.send_message(cid, msf_edu, parse_mode='Markdown')
-
-    elif text == '🗡️ Sqlmap: سحب قواعد البيانات':
-        sql_edu = (
-            "🗡️ **أداة Sqlmap (مستخرج البيانات الآلي)**\n\n"
-            "1️⃣ **البحث عن قواعد البيانات:**\n"
-            "`python sqlmap.py -u [URL] --dbs`\n"
-            "⚙️ **خيارات التخفي والقوة:**\n"
-            "- `--random-agent`: تغيير بصمة المتصفح.\n"
-            "- `--level=5`: أقصى مستوى للفحص."
-        )
-        bot.send_message(cid, sql_edu, parse_mode='Markdown')
-
-    elif text == '🖥️ أوامر Linux الأساسية':
-        linux_list = (
-            "🖥️ **موسوعة أوامر Linux للمحترفين:**\n\n"
-            "• `pwd`: معرفة المسار الحالي.\n"
-            "• `ls -la`: عرض كافة الملفات بما فيها المخفية.\n"
-            "• `chmod 777 [file]`: إعطاء كافة الصلاحيات.\n"
-            "• `top`: عرض العمليات التي تستهلك المعالج حالياً.\n"
-            "• `ifconfig`: عرض إعدادات الشبكة و الـ IP."
-        )
-        bot.send_message(cid, linux_list, parse_mode='Markdown')
-
-    elif text == '🔐 كسر التشفير والهاشات':
-        crypto_edu = (
-            "🔐 **دليل كسر التشفير (Cracking Encyclopedia):**\n\n"
-            "1️⃣ **John the Ripper:** الأداة الأقوى لكسر الهاشات.\n"
-            "2️⃣ **Hash-Identifier:** لمعرفة نوع التشفير.\n"
-            "3️⃣ **Hydra:** للتخمين على البروتوكولات."
-        )
-        bot.send_message(cid, crypto_edu, parse_mode='Markdown')
-
-    elif text == '🕵️ أدوات جمع المعلومات (OSINT)':
-        osint_edu = (
-            "🕵️ **قسم جمع المعلومات الاستخباراتية (OSINT):**\n\n"
-            "• **Sherlock**: للبحث عن أي يوزر نيم.\n"
-            "• **Whois**: لجلب معلومات صاحب أي نطاق."
-        )
-        bot.send_message(cid, osint_edu, parse_mode='Markdown')
-
-    # تصحيح: تطابق النص مع زر المطور في القائمة الرئيسية
-    elif text == '👨‍💻 معلومات المطور':
-        dev_info = (
-            f"👑 **السجل الرسمي للإمبراطور:**\n\n"
-            f"👤 **الاسم:** {DEV_NAME}\n"
-            f"🛠️ **اللقب:** {DEV_TITLE}\n"
-            f"🆔 **اليوزر:** {DEV_USER}\n\n"
-            "هذا النظام هو نتاج عمل مستمر لتقديم أفضل الأدوات والخبرات."
-        )
-        bot.send_message(cid, dev_info, parse_mode='Markdown')
-
-    elif text == '🔙 القائمة الرئيسية':
-        bot.send_message(cid, "🔙 تم العودة للرئيسية.", reply_markup=main_menu())
-
-# --- إعدادات Webhook الخاصة بـ Render ---
-WEBHOOK_HOST = "https://security-bot-6.onrender.com" 
-WEBHOOK_URL = f"{WEBHOOK_HOST}/{TOKEN}"
-
-@app.route(f"/{TOKEN}", methods=["POST"])
-def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        json_str = request.get_data().decode("UTF-8")
-        update = telebot.types.Update.de_json(json_str)
-        bot.process_new_updates([update])
-        return "OK", 200
+# كود حساب عدد المستخدمين الذين زاروا البوت
+@bot.message_handler(commands=['stats'])
+def get_starts(message):
+    if message.from_user.id == ADMIN_ID:
+        file_name = "users.txt"
+        if os.path.exists(file_name):
+            with open(file_name, "r") as f:
+                total_users = len(f.read().splitlines())
+                bot.send_message(message.chat.id, f"** إحصائيات البوت الكلية 📊**\n\n👥 عدد المستخدمين من بداية الانشاء: `{total_users}`")
+        else:
+            bot.send_message(message.chat.id, "❌ لا توجد بيانات حالياً.")
     else:
-        return "Error", 403
+        bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط. ")
+
+# ==========================================
+#         🤖 محرك الذكاء الاصطناعي
+# ==========================================
+@bot.message_handler(func=lambda message: message.text == '🤖 اسأل الذكاء الاصطناعي')
+def ai_welcome_msg(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_back = types.KeyboardButton('⬅️ العودة للقائمة الرئيسية')
+    markup.add(btn_back)
+
+    msg = bot.send_message(message.chat.id, "🤖 مرحباً بك في محرّك الذكاء الاصطناعي لجيميني!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:", reply_markup=markup)
+    bot.register_next_step_handler(msg, call_gemini_ai)
+
+def call_gemini_ai(message):
+    if message.text == '⬅️ العودة للقائمة الرئيسية':
+        send_welcome(message)
+        return
+
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    try:
+        response = ai_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=message.text,
+        )
+        bot.send_message(message.chat.id, response.text, parse_mode="Markdown")
+        
+        msg = bot.send_message(message.chat.id, "✨ اسألني عن أي شيء آخر، أو اضغط على زر العودة بالأسفل:")
+        bot.register_next_step_handler(msg, call_gemini_ai)
+        
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي: {e}")
+
+# دالة مخصصة لتنظيف الاتصال وبدء الـ Polling
+def start_bot_polling():
+    try:
+        # 🔥 الأمر السحري لحذف أي Webhook قديم مسبب للتعارض وحل المشكلة تماماً!
+        bot.delete_webhook(drop_pending_updates=True)
+        print("[Telegram] Webhook deleted successfully. Starting Polling...")
+    except Exception as e:
+        print(f"[Telegram] Error deleting webhook: {e}")
+        
+    bot.polling(none_stop=True)
 
 if __name__ == "__main__":
-    print(f"🛡️ [System Online] - Master: {DEV_NAME}")
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
+    # 1. تشغيل البوت في خيط مستقل
+    t = threading.Thread(target=start_bot_polling)
+    t.start()
     
-    # تشغيل السيرفر بالمنفذ الصحيح لـ Render
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    # 2. تشغيل Flask في الخيط الأساسي ليمسك الـ Port فوراً في Render
+    run_flask()
