@@ -49,8 +49,9 @@ def send_welcome(message):
             
     # إنشاء لوحة التحكم بشكل صريح لإجبار الأزرار على الظهور
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn_ai = types.KeyboardButton('🤖 اسأل الذكاء الاصطناعي')
+    btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي', 'الأمن السيبراني ☠️')
     markup.add(btn_ai)
+    markup.add('مطورو البوت 👨‍💻')
             
     test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
     bot.send_message(message.chat.id, test, reply_markup=markup)
