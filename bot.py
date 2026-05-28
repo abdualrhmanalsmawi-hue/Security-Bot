@@ -23,7 +23,7 @@ def run_flask():
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
     
-# كود الرسالة الترحيبية وتخزين البيانات الشاملة
+# معرف المالك الرئيسي وإعدادات ملف التخزين
 ADMIN_ID = 1036157698
 file_name = "users_database.txt"
 
@@ -33,19 +33,15 @@ def send_welcome(message):
     first_name = message.from_user.first_name
     username = message.from_user.username if message.from_user.username else "لا يوجد"
 
-    # التأكد من إنشاء الملف إذا لم يكن موجوداً
-    if not os.path.exists(file_name): 
-        with open(file_name, "w", encoding="utf-8") as f:
-            pass
+    # قراءة البيانات الحالية إذا كان الملف موجوداً، أو فرض نص فارغ إذا كان ممسوحاً
+    existing_data = ""
+    if os.path.exists(file_name):
+        with open(file_name, "r", encoding="utf-8") as f:
+            existing_data = f.read()
 
-    # قراءة الملف للتحقق من عدم تكرار المستخدم
-    with open(file_name, "r", encoding="utf-8") as f:
-        existing_data = f.read()
-
-    # إذا كان المستخدم جديداً، يتم حفظ كل بياناته وإشعار المالك
+    # إذا كان المستخدم جديداً وغير مسجل في النص الحالي، نضيفه فوراً بصيغة الإضافة "a"
     if str(user_id) not in existing_data:
         with open(file_name, "a", encoding="utf-8") as f:
-            # تخزين البيانات في سطر واحد مفصولة بـ | لسهولة القراءة والفرز لاحقاً
             f.write(f"{user_id} | {first_name} | @{username}\n")
             
         alert = (f"🔔 **مستخدم جديد دخل البوت الآن!**\n\n"
@@ -54,11 +50,11 @@ def send_welcome(message):
                  f"🧷 **اليوزر:** @{username}")
         bot.send_message(ADMIN_ID, alert, parse_mode="Markdown")
             
-    # إنشاء لوحة التحكم
+    # إنشاء لوحة التحكم بالشكل الاحترافي الموزع
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي')
     btn_cyber = types.KeyboardButton('🛡️ الأمن السيبراني')
-    btn_make = types.KeyboardButton('🛠️ صنع بوتات تلجرام ')
+    btn_make = types.KeyboardButton('🛠️ صنع بوتات تلجرام')
     btn_dev = types.KeyboardButton('💁‍♂️ مطورو البوت')
     
     markup.add(btn_ai, btn_cyber)
@@ -76,35 +72,38 @@ def get_starts(message):
             with open(file_name, "r", encoding="utf-8") as f:
                 lines = f.read().splitlines()
                 total_users = len(lines)
-                
-            if total_users == 0:
-                bot.send_message(message.chat.id, "❌ قاعدة البيانات فارغة حالياً.")
-                return
-
-            # بناء رسالة التقرير الفخم للإمبراطور
-            report = f"📊 **إحصائيات وكشف مستخدمي البوت الكلية**\n"
-            report += f"👥 **العدد الإجمالي:** `{total_users}` مستخدم\n"
-            report += f"═ { '═' * 15 } ═\n"
+        else:
+            lines = []
+            total_users = 0
             
-            # عرض تفاصيل آخر 20 مستخدم لضمان عدم تجاوز حجم رسالة تليجرام
-            report += "📋 **قائمة المشتركين تفصيلياً:**\n"
-            for index, line in enumerate(lines, 1):
+        if total_users == 0:
+            bot.send_message(message.chat.id, "📋 قاعدة البيانات فارغة حالياً ولا يوجد زوار.")
+            return
+
+        # بناء التقرير المنظم والشامل للإمبراطور
+        report = f"📊 **إحصائيات وكشف مستخدمي البوت الكلية**\n"
+        report += f"👥 **العدد الإجمالي للمشتركين:** `{total_users}`\n"
+        report += f"═ { '═' * 15 } ═\n"
+        report += "📋 **كشف بيانات المشتركين تفصيلياً:**\n\n"
+        
+        for index, line in enumerate(lines, 1):
+            if " | " in line:
                 try:
                     uid, name, u_name = line.split(" | ")
-                    report += f"{index}. {name} -> (`{uid}`) | {u_name}\n"
+                    report += f"{index}️⃣ **الاسم:** {name}\n🆔 **الآيدي:** `{uid}`\n🧷 **اليوزر:** {u_name}\n\n"
                 except:
-                    report += f"{index}. {line}\n"
-            
-            bot.send_message(message.chat.id, report, parse_mode="Markdown")
-        else:
-            bot.send_message(message.chat.id, "❌ لا توجد قاعدة بيانات حالياً.")
+                    report += f"{index}️⃣ {line}\n\n"
+            else:
+                report += f"{index}️⃣ {line}\n\n"
+        
+        bot.send_message(message.chat.id, report, parse_mode="Markdown")
     else:
         bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط.")
 
 # ==========================================
 #         🤖 محرك الذكاء الاصطناعي
 # ==========================================
-@bot.message_handler(func=lambda message: message.text == '🤖 اسأل الذكاء الاصطناعي')
+@bot.message_handler(func=lambda message: message.text == '🤖 الذكاء الاصطناعي')
 def ai_welcome_msg(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn_back = types.KeyboardButton('⬅️ العودة للقائمة الرئيسية')
@@ -144,6 +143,9 @@ def start_bot_polling():
     bot.polling(none_stop=True)
 
 if __name__ == "__main__":
+    # 1. تشغيل البوت في خيط مستقل
     t = threading.Thread(target=start_bot_polling)
     t.start()
+    
+    # 2. تشغيل Flask في الخيط الأساسي ليمسك الـ Port فوراً في Render
     run_flask()
