@@ -23,40 +23,44 @@ def run_flask():
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
     
-# كود الرسالة الترحيبية للمستخدم
+# كود الرسالة الترحيبية وتخزين البيانات الشاملة
 ADMIN_ID = 1036157698
+file_name = "users_database.txt"
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
     first_name = message.from_user.first_name
-    username = message.from_user.username
+    username = message.from_user.username if message.from_user.username else "لا يوجد"
 
-    file_name = "users.txt"
+    # التأكد من إنشاء الملف إذا لم يكن موجوداً
     if not os.path.exists(file_name): 
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             pass
-    with open(file_name, "r") as f:
-        exiting_users = f.read().splitlines()
 
-    if str(user_id) not in exiting_users:
-        with open(file_name, "a") as f:
-            f.write(f"{user_id}\n")
-            alert = ( f" مستخدم جديد دخل البوت الآن !**🔔 \n\n"
-            f"👤 الاسم : {first_name}\n"
-            f"🆔 الآيدي : `{user_id}`\n"
-            f"🧷 اليوزر : @{username if username else 'لا يوجد يوزر '}" )
+    # قراءة الملف للتحقق من عدم تكرار المستخدم
+    with open(file_name, "r", encoding="utf-8") as f:
+        existing_data = f.read()
+
+    # إذا كان المستخدم جديداً، يتم حفظ كل بياناته وإشعار المالك
+    if str(user_id) not in existing_data:
+        with open(file_name, "a", encoding="utf-8") as f:
+            # تخزين البيانات في سطر واحد مفصولة بـ | لسهولة القراءة والفرز لاحقاً
+            f.write(f"{user_id} | {first_name} | @{username}\n")
+            
+        alert = (f"🔔 **مستخدم جديد دخل البوت الآن!**\n\n"
+                 f"👤 **الاسم:** {first_name}\n"
+                 f"🆔 **الآيدي:** `{user_id}`\n"
+                 f"🧷 **اليوزر:** @{username}")
         bot.send_message(ADMIN_ID, alert, parse_mode="Markdown")
             
-    # إنشاء لوحة التحكم بشكل صريح لإجبار الأزرار على الظهور
+    # إنشاء لوحة التحكم
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    
-    # تعريف الأزرار الثلاثة منفصلة بشكل صحيح
     btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي')
     btn_cyber = types.KeyboardButton('🛡️ الأمن السيبراني')
     btn_make = types.KeyboardButton('🛠️ صنع بوتات تلجرام ')
     btn_dev = types.KeyboardButton('💁‍♂️ مطورو البوت')
     
-    # توزيع الأزرار: أول زرين بجانب بعضهما، والزر الثالث في سطر منفصل بالأسفل
     markup.add(btn_ai, btn_cyber)
     markup.add(btn_make)
     markup.add(btn_dev)
@@ -64,19 +68,38 @@ def send_welcome(message):
     test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
     bot.send_message(message.chat.id, test, reply_markup=markup)
 
-# كود حساب عدد المستخدمين الذين زاروا البوت
+# كود حساب وعرض كشوفات المستخدمين بالتفصيل للمالك فقط
 @bot.message_handler(commands=['stats'])
 def get_starts(message):
     if message.from_user.id == ADMIN_ID:
-        file_name = "users.txt"
         if os.path.exists(file_name):
-            with open(file_name, "r") as f:
-                total_users = len(f.read().splitlines())
-                bot.send_message(message.chat.id, f"** إحصائيات البوت الكلية 📊**\n\n👥 عدد المستخدمين من بداية الانشاء: `{total_users}`")
+            with open(file_name, "r", encoding="utf-8") as f:
+                lines = f.read().splitlines()
+                total_users = len(lines)
+                
+            if total_users == 0:
+                bot.send_message(message.chat.id, "❌ قاعدة البيانات فارغة حالياً.")
+                return
+
+            # بناء رسالة التقرير الفخم للإمبراطور
+            report = f"📊 **إحصائيات وكشف مستخدمي البوت الكلية**\n"
+            report += f"👥 **العدد الإجمالي:** `{total_users}` مستخدم\n"
+            report += f"═ { '═' * 15 } ═\n"
+            
+            # عرض تفاصيل آخر 20 مستخدم لضمان عدم تجاوز حجم رسالة تليجرام
+            report += "📋 **قائمة المشتركين تفصيلياً:**\n"
+            for index, line in enumerate(lines, 1):
+                try:
+                    uid, name, u_name = line.split(" | ")
+                    report += f"{index}. {name} -> (`{uid}`) | {u_name}\n"
+                except:
+                    report += f"{index}. {line}\n"
+            
+            bot.send_message(message.chat.id, report, parse_mode="Markdown")
         else:
-            bot.send_message(message.chat.id, "❌ لا توجد بيانات حالياً.")
+            bot.send_message(message.chat.id, "❌ لا توجد قاعدة بيانات حالياً.")
     else:
-        bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط. ")
+        bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط.")
 
 # ==========================================
 #         🤖 محرك الذكاء الاصطناعي
@@ -113,7 +136,6 @@ def call_gemini_ai(message):
 # دالة مخصصة لتنظيف الاتصال وبدء الـ Polling
 def start_bot_polling():
     try:
-        # 🔥 الأمر السحري لحذف أي Webhook قديم مسبب للتعارض وحل المشكلة تماماً!
         bot.delete_webhook(drop_pending_updates=True)
         print("[Telegram] Webhook deleted successfully. Starting Polling...")
     except Exception as e:
@@ -122,9 +144,6 @@ def start_bot_polling():
     bot.polling(none_stop=True)
 
 if __name__ == "__main__":
-    # 1. تشغيل البوت في خيط مستقل
     t = threading.Thread(target=start_bot_polling)
     t.start()
-    
-    # 2. تشغيل Flask في الخيط الأساسي ليمسك الـ Port فوراً في Render
     run_flask()
