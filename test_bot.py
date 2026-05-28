@@ -1,11 +1,30 @@
 import telebot
 import os
+import threading
 from telebot import types
+from google import genai
+from flask import Flask
 
 TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
 bot = telebot.TeleBot(TOKEN)
 
-# كود الرسالة الترحيبة للمستخدم
+# تعريف مفتاح الذكاء الاصطناعي والعميل لـ Gemini
+GEMINI_API_KEY = "AQ.Ab8RN6Izye9nO-FUxhx34rpmDjUQVB4YDZWKpjJuB6dL6Jbr2w"
+ai_client = genai.Client(api_key=GEMINI_API_KEY)
+
+# كود Flask لحماية السيرفر من الإغلاق في Render بسبب المنافذ
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is running online! 🚀"
+
+def run_flask():
+    # جعل السيرفر يمسك الـ Port الممرر من Render فوراً وبشكل صريح
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+    
+# كود الرسالة الترحيبية للمستخدم
 ADMIN_ID = 1036157698
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -27,23 +46,72 @@ def send_welcome(message):
             f"👤 الاسم : {first_name}\n"
             f"🆔 الآيدي : `{user_id}`\n"
             f"🧷 اليوزر : @{username if username else 'لا يوجد يوزر '}" )
-        bot.send_message(ADMIN_ID,alert, parse_mode="Markdown")
+        bot.send_message(ADMIN_ID, alert, parse_mode="Markdown")
             
-    test = "فريق ROOT—7 يرحب بكم 🙋‍♂️" 
-    bot.send_message(message.chat.id,test)
+    # إنشاء لوحة التحكم وإضافة زر الذكاء الاصطناعي لضمان ظهوره فوراً
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_ai = types.KeyboardButton('🤖 اسأل الذكاء الاصطناعي')
+    markup.add(btn_ai)
+            
+    test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
+    bot.send_message(message.chat.id, test, reply_markup=markup)
 
 # كود حساب عدد المستخدمين الذين زاروا البوت
-@bot.message_handler(commands = ['stats'])
+@bot.message_handler(commands=['stats'])
 def get_starts(message):
     if message.from_user.id == ADMIN_ID:
         file_name = "users.txt"
         if os.path.exists(file_name):
             with open(file_name, "r") as f:
                 total_users = len(f.read().splitlines())
-                bot.send_message(message.chat.id,f"** إحصائيات البوت الكلية 📊**\n\n👥 عدد المستخدمين من بداية الانشاء: `{total_users}`")
-
+                bot.send_message(message.chat.id, f"** إحصائيات البوت الكلية 📊**\n\n👥 عدد المستخدمين من بداية الانشاء: `{total_users}`")
         else:
-            bot.send_message(message.chat.id, "❌ هاذا الأمر مخصص لمالك النظام فقط. ")
+            bot.send_message(message.chat.id, "❌ لا توجد بيانات حالياً.")
+    else:
+        bot.send_message(message.chat.id, "❌ هذا الأمر مخصص لمالك النظام فقط. ")
 
-bot.remove_webhook()
-bot.polling(none_stop=True)
+# ==========================================
+#         🤖 محرك الذكاء الاصطناعي
+# ==========================================
+@bot.message_handler(func=lambda message: message.text == '🤖 اسأل الذكاء الاصطناعي')
+def ai_welcome_msg(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_back = types.KeyboardButton('⬅️ العودة للقائمة الرئيسية')
+    markup.add(btn_back)
+
+    msg = bot.send_message(message.chat.id, "🤖 مرحباً بك في محرّك الذكاء الاصطناعي لجيميني!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:", reply_markup=markup)
+    bot.register_next_step_handler(msg, call_gemini_ai)
+
+def call_gemini_ai(message):
+    if message.text == '⬅️ العودة للقائمة الرئيسية':
+        send_welcome(message)
+        return
+
+    bot.send_chat_action(message.chat.id, 'typing')
+    
+    try:
+        response = ai_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=message.text,
+        )
+        bot.send_message(message.chat.id, response.text, parse_mode="Markdown")
+        
+        msg = bot.send_message(message.chat.id, "✨ اسألني عن أي شيء آخر، أو اضغط على زر العودة بالأسفل:")
+        bot.register_next_step_handler(msg, call_gemini_ai)
+        
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ حدث خطأ أثناء الاتصال بمحرك الذكاء الاصطناعي: {e}")
+
+# دالة مخصصة لربط الـ Polling بخيط مستقل ومستقر
+def start_bot_polling():
+    bot.remove_webhook()
+    print("[System Online] Listening for messages...")
+    bot.polling(none_stop=True)
+
+if __name__ == "__main__":
+    # 1. تشغيل البوت في خيط منفصل أولاً لكي لا يمنع تشغيل الفلاسك
+    t = threading.Thread(target=start_bot_polling)
+    t.start()
+    
+    # 2. تشغيل Flask في الخيط الأساسي (Main Thread) لكي يستجيب لـ Render فوراً ويمسك الـ Port
+    run_flask()
