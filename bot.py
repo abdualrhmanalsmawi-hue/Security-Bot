@@ -5,7 +5,7 @@ from telebot import types
 from google import genai
 from flask import Flask
 
-TOKEN ='8711639465:AAGHtPQ1J4ft1mDzNkhvfYy7bDZNUlNYcGQ'
+TOKEN ='8586434472:AAF4lOQjf8WnwvKHyePxHS4JDKrZeH5HIgI'
 bot = telebot.TeleBot(TOKEN)
 
 # تعريف مفتاح الذكاء الاصطناعي والعميل لـ Gemini
