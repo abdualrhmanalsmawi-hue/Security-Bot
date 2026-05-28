@@ -49,9 +49,17 @@ def send_welcome(message):
             
     # إنشاء لوحة التحكم بشكل صريح لإجبار الأزرار على الظهور
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي', 'الأمن السيبراني ☠️')
-    markup.add(btn_ai)
-    markup.add('مطورو البوت 👨‍💻')
+    
+    # تعريف الأزرار الثلاثة منفصلة بشكل صحيح
+    btn_ai = types.KeyboardButton('🤖 الذكاء الاصطناعي')
+    btn_cyber = types.KeyboardButton('🛡️ الأمن السيبراني')
+    btn_make = types.KeyboardButton('🛠️ صنع بوتات تلجرام ')
+    btn_dev = types.KeyboardButton('💁‍♂️ مطورو البوت')
+    
+    # توزيع الأزرار: أول زرين بجانب بعضهما، والزر الثالث في سطر منفصل بالأسفل
+    markup.add(btn_ai, btn_cyber)
+    markup.add(btn_make)
+    markup.add(btn_dev)
             
     test = f"أهلاً بك يا {first_name} في فريق ROOT—7 🙋‍♂️\nإختر من القائمة أدناه لتجربة النظام:" 
     bot.send_message(message.chat.id, test, reply_markup=markup)
