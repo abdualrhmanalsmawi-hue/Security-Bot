@@ -44,4 +44,6 @@ def get_starts(message):
 
         else:
             bot.send_message(message.chat.id, "❌ هاذا الأمر مخصص لمالك النظام فقط. ")
+
+bot.remove_webhook()
 bot.polling(none_stop=True)
