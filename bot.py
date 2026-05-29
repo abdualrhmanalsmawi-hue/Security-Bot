@@ -23,9 +23,20 @@ def run_flask():
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
     
-# معرف المالك الرئيسي وإعدادات ملف التخزين
+# معرف المالك الرئيسي
 ADMIN_ID = 1036157698
-file_name = "users_database.txt"
+
+# ═ { قائمة المستخدمين الدائمة والمحفوظة للأبد } ═
+# يا إمبراطور، أي مستخدم جديد يأتيك إشعاره، قم بوضعه هنا في هذا الكشف ليبقى محفوظاً داخل الكود ولن يتم صفيره أبداً!
+PERMANENT_USERS = [
+    {"id": 1036157698, "name": "الامبراطور", "username": "@AL22009"},
+    {"id": 5941829727, "name": "نصرالله", "username": "@لا يوجد يوزر"},
+    {"id": 8113210715, "name": "-", "username": "@Scworld30"},
+    {"id": 8799974075, "name": "..", "username": "@لا يوجد يوزر"}
+]
+
+# مصفوفة مؤقتة لتخزين الجلسة الحالية حتى لا تتكرر الإشعارات
+session_users = []
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -33,18 +44,15 @@ def send_welcome(message):
     first_name = message.from_user.first_name
     username = message.from_user.username if message.from_user.username else "لا يوجد"
 
-    # قراءة البيانات الحالية إذا كان الملف موجوداً، أو فرض نص فارغ إذا كان ممسوحاً
-    existing_data = ""
-    if os.path.exists(file_name):
-        with open(file_name, "r", encoding="utf-8") as f:
-            existing_data = f.read()
-
-    # إذا كان المستخدم جديداً وغير مسجل في النص الحالي، نضيفه فوراً بصيغة الإضافة "a"
-    if str(user_id) not in existing_data:
-        with open(file_name, "a", encoding="utf-8") as f:
-            f.write(f"{user_id} | {first_name} | @{username}\n")
-            
-        alert = (f"🔔 **مستخدم جديد دخل البوت الآن!**\n\n"
+    # التحقق هل المستخدم موجود في القائمة الدائمة أو الجلسة المؤقتة
+    is_permanent = any(user["id"] == user_id for user in PERMANENT_USERS)
+    
+    if not is_permanent and user_id not in session_users:
+        session_users.append(user_id)
+        
+        # إرسال إشعار فوري للمالك لكي يقوم بنسخ البيانات وإضافتها للكود عند تحديث GitHub
+        alert = (f"🔔 **مستخدم جديد دخل البوت الآن!**\n"
+                 f"⚠️ (قم بإضافته إلى القائمة الدائمة في الكود على GitHub)\n\n"
                  f"👤 **الاسم:** {first_name}\n"
                  f"🆔 **الآيدي:** `{user_id}`\n"
                  f"🧷 **اليوزر:** @{username}")
@@ -68,33 +76,20 @@ def send_welcome(message):
 @bot.message_handler(commands=['stats'])
 def get_starts(message):
     if message.from_user.id == ADMIN_ID:
-        if os.path.exists(file_name):
-            with open(file_name, "r", encoding="utf-8") as f:
-                lines = f.read().splitlines()
-                total_users = len(lines)
-        else:
-            lines = []
-            total_users = 0
-            
+        total_users = len(PERMANENT_USERS)
+        
         if total_users == 0:
-            bot.send_message(message.chat.id, "📋 قاعدة البيانات فارغة حالياً ولا يوجد زوار.")
+            bot.send_message(message.chat.id, "📋 قائمة البيانات فارغة حالياً ولا يوجد زوار.")
             return
 
-        # بناء التقرير المنظم والشامل للإمبراطور
+        # بناء التقرير المنظم والشامل للإمبراطور مستخرج من الكود الثابت مباشرة
         report = f"📊 **إحصائيات وكشف مستخدمي البوت الكلية**\n"
-        report += f"👥 **العدد الإجمالي للمشتركين:** `{total_users}`\n"
+        report += f"👥 **العدد الإجمالي للمشتركين الثابتين:** `{total_users}`\n"
         report += f"═ { '═' * 15 } ═\n"
-        report += "📋 **كشف بيانات المشتركين تفصيلياً:**\n\n"
+        report += "📋 **كشف بيانات المشتركين المحفوظة للأبد:**\n\n"
         
-        for index, line in enumerate(lines, 1):
-            if " | " in line:
-                try:
-                    uid, name, u_name = line.split(" | ")
-                    report += f"{index}️⃣ **الاسم:** {name}\n🆔 **الآيدي:** `{uid}`\n🧷 **اليوزر:** {u_name}\n\n"
-                except:
-                    report += f"{index}️⃣ {line}\n\n"
-            else:
-                report += f"{index}️⃣ {line}\n\n"
+        for index, user in enumerate(PERMANENT_USERS, 1):
+            report += f"{index}️⃣ **الاسم:** {user['name']}\n🆔 **الآيدي:** `{user['id']}`\n🧷 **اليوزر:** {user['username']}\n\n"
         
         bot.send_message(message.chat.id, report, parse_mode="Markdown")
     else:
@@ -109,7 +104,7 @@ def ai_welcome_msg(message):
     btn_back = types.KeyboardButton('⬅️ العودة للقائمة الرئيسية')
     markup.add(btn_back)
 
-    msg = bot.send_message(message.chat.id, "🤖 مرحباً بك في محرّك الذكاء الاصطناعي لجيميني!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:", reply_markup=markup)
+    msg = bot.send_message(message.chat.id, "🤖 مرحباً بك في محرّك الذكاء الاصطناعي الخاص بفريق ROOT—7!\nاكتب سؤالك أو استفسارك الآن وسأجيبك فوراً:", reply_markup=markup)
     bot.register_next_step_handler(msg, call_gemini_ai)
 
 def call_gemini_ai(message):
@@ -143,9 +138,6 @@ def start_bot_polling():
     bot.polling(none_stop=True)
 
 if __name__ == "__main__":
-    # 1. تشغيل البوت في خيط مستقل
     t = threading.Thread(target=start_bot_polling)
     t.start()
-    
-    # 2. تشغيل Flask في الخيط الأساسي ليمسك الـ Port فوراً في Render
     run_flask()
